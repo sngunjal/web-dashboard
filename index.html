@@ -59,7 +59,7 @@
 
         function createMarker(location) {
             // Initial icon size and label box size based on map zoom
-            const iconSize = map.getZoom() > 13 ? [40, 10] : [80, 30];
+            const iconSize = map.getZoom() > 13 ? [40, 10] : [60, 20];
 
             // Create a custom divIcon for each marker with a location name
             const icon = L.divIcon({
@@ -74,7 +74,7 @@
             // Add a listener for zoom events to adjust icon size dynamically
             map.on('zoom', function() {
                 const zoom = map.getZoom();
-                const newSize = zoom > 13 ? [40, 10] : [80, 30];
+                const newSize = zoom > 13 ? [40, 10] : [60, 20];
                 marker.setIcon(L.divIcon({
                     className: 'custom-label',
                     html: `<div class="icon-location"></div><div>${location.name}</div>`,
