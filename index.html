@@ -8,7 +8,7 @@
     <style>
         #map {
             height: 400px;
-            width: 40%;
+            width: 60%;
         }
         /* Style for custom labels */
         .custom-label {
@@ -59,7 +59,7 @@
 
         function createMarker(location) {
             // Initial icon size and label box size based on map zoom
-            const iconSize = map.getZoom() > 13 ? [60, 20] : [40, 10];
+            const iconSize = map.getZoom() > 25 ? [60, 20] : [40, 10];
 
             // Create a custom divIcon for each marker with a location name
             const icon = L.divIcon({
