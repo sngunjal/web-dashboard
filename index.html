@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,28 +10,31 @@
             height: 400px;
             width: 60%;
         }
-        /* Style for custom labels */
-        .custom-label {
-            background-color: #fff;
-            padding: 5px;
-            border-radius: 5px;
-            font-size: 10px;
-            font-weight: bold;
+
+        /* Style for triangular flag markers */
+        .flag-icon {
+            position: relative;
+            display: inline-block;
+            background-color: lightblue;
             color: #333;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 2px;
+            white-space: nowrap;
         }
 
-        /* Add icon style */
-        .icon-location {
-            width: 5px;
-            height: 5px;
-            background-color: #f00;  /* red icon */
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
+        .flag-icon:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 6px 0 6px;
+            border-color: lightblue transparent transparent transparent;
+            transform: translateX(-50%);
         }
     </style>
 </head>
@@ -42,7 +45,7 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map').setView([19.22144, 72.8653], 14.45); // Default center near Stake park middle of all five locations
+        var map = L.map('map').setView([19.22144, 72.8653], 14.5); // Default center near the middle of all locations
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -58,38 +61,35 @@
         ];
 
         function createMarker(location) {
-            // Initial icon size and label box size based on map zoom
-            const iconSize = map.getZoom() > 18 ? [60, 20] : [40, 10];
+            const iconSize = 14; // Font size for the text in the flag
 
-            // Create a custom divIcon for each marker with a location name
+            // Create a custom divIcon for triangular flags
             const icon = L.divIcon({
-                className: 'custom-label',
-                html: `<div class="icon-location"></div><div>${location.name}</div>`,
-                iconSize: iconSize,
-                iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+                className: '',
+                html: `<div class="flag-icon">${location.name}</div>`,
+                iconSize: null, // Size dynamically adjusts to content
+                iconAnchor: [0, 0], // Align flag to the location
             });
 
             const marker = L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
 
-            // Add a listener for zoom events to adjust icon size dynamically
+            // Dynamically adjust flag font size and scaling during zoom
             map.on('zoom', function() {
                 const zoom = map.getZoom();
-                const newSize = zoom > 18 ? [40, 10] : [60, 20];
-                marker.setIcon(L.divIcon({
-                    className: 'custom-label',
-                    html: `<div class="icon-location"></div><div>${location.name}</div>`,
-                    iconSize: newSize,
-                    iconAnchor: [newSize[0] / 2, newSize[1] / 2],
-                }));
+                const adjustedFontSize = Math.max(10, Math.min(18, zoom * 1.2)); // Font size based on zoom
+                const flagElements = document.getElementsByClassName("flag-icon");
+                Array.from(flagElements).forEach(el => {
+                    el.style.fontSize = `${adjustedFontSize}px`;
+                });
             });
         }
 
         // Create markers for all locations
         locations.forEach(createMarker);
-
     </script>
 
 </body>
 </html>
+
 
 
