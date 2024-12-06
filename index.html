@@ -74,7 +74,7 @@
             // Add a listener for zoom events to adjust icon size dynamically
             map.on('zoom', function() {
                 const zoom = map.getZoom();
-                const newSize = zoom > 13 ? [100, 40] : [80, 30];
+                const newSize = zoom > 13 ? [40, 10] : [80, 30];
                 marker.setIcon(L.divIcon({
                     className: 'custom-label',
                     html: `<div class="icon-location"></div><div>${location.name}</div>`,
