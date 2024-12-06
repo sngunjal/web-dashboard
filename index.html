@@ -11,41 +11,56 @@
             width: 60%;
         }
 
-        /* Style for flag icon markers */
+        /* Style for triangular flag markers */
         .flag-icon {
             position: relative;
             display: inline-block;
-        }
-
-        .flag-icon img {
-            height: 25px; /* Adjust the size of the flag icon */
-            width: auto;
-        }
-
-        /* Tooltip style */
-        .tooltip {
-            display: none; /* Initially hidden */
-            position: absolute;
-            background-color: #fff;
+            background-color: lightblue;
             color: #333;
             font-size: 12px;
             font-weight: bold;
-            border: 1px solid #ccc;
-            padding: 5px;
-            border-radius: 3px;
+            padding: 5px 10px;
+            border-radius: 2px;
             white-space: nowrap;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
         }
 
-        /* Show tooltip on hover */
-        .flag-icon:hover .tooltip {
+        .flag-icon:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 6px 0 6px;
+            border-color: lightblue transparent transparent transparent;
+            transform: translateX(-50%);
+        }
+
+        /* Hover pop-up label */
+        .popup-label {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 3px 5px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .flag-icon:hover + .popup-label {
             display: block;
         }
     </style>
 </head>
 <body>
 
-    <h1>Map with Flag Icons</h1>
+    <h1>Map with Restricted Area</h1>
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -55,6 +70,15 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        // Restrict map bounds
+        const southWest = L.latLng(19.200000, 72.852384); // Southwest corner
+        const northEast = L.latLng(19.250000, 72.880000); // Northeast corner
+        const bounds = L.latLngBounds(southWest, northEast);
+        map.setMaxBounds(bounds);
+        map.on('drag', function() {
+            map.panInsideBounds(bounds, { animate: true });
+        });
 
         // Locations and markers
         const locations = [
@@ -66,37 +90,36 @@
         ];
 
         function createMarker(location) {
-            // Create a custom divIcon with the flag image and a hidden tooltip
+            // Create a custom divIcon for triangular flags
             const icon = L.divIcon({
                 className: '',
-                html: `
-                    <div class="flag-icon">
-                        <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png?9898922749706957214" alt="flag">
-                        <div class="tooltip">${location.name}</div>
-                    </div>
-                `,
-                iconSize: null, // Automatically scale to content size
-                iconAnchor: [12, 25], // Align the base of the flag to the marker position
+                html: `<div class="flag-icon">${location.name}</div>`,
+                iconSize: null, // Size dynamically adjusts to content
+                iconAnchor: [0, 0], // Align flag to the location
             });
 
-            L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
+            const marker = L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
+
+            // Hover event to show popup
+            marker.on('mouseover', function(e) {
+                const popup = L.popup({ offset: [0, -10] })
+                    .setLatLng(e.latlng)
+                    .setContent(location.name)
+                    .openOn(map);
+            });
+
+            marker.on('mouseout', function() {
+                map.closePopup();
+            });
         }
 
         // Create markers for all locations
         locations.forEach(createMarker);
-
-        // Dynamically adjust flag size during zoom events
-        map.on('zoom', function () {
-            const zoom = map.getZoom();
-            const newSize = zoom > 14 ? '35px' : '25px'; // Larger flags at higher zoom levels
-            document.querySelectorAll('.flag-icon img').forEach(img => {
-                img.style.height = newSize;
-            });
-        });
     </script>
 
 </body>
 </html>
+
 
 
 
