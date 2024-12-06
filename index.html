@@ -50,12 +50,16 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-         // Define the bounding box to exclude regions west of longitude 72.8528
+        // Define the bounding box to exclude regions west of 72.8528 and east of 72.887
         const bounds = L.latLngBounds(
             [19.2100, 72.8528], // Southwest corner of the bounding box
-            [19.2400, 72.8900]  // Northeast corner of the bounding box
+            [19.2400, 72.8870]  // Northeast corner of the bounding box
         );
-        var map = L.map('map').setView([19.22144, 72.8653], 14.25); // Default center near the middle of all locations
+
+        var map = L.map('map', {
+            maxBounds: bounds, // Restrict the map to this area
+            maxBoundsViscosity: 1.0 // Makes the bounding restriction feel more natural
+        }).setView([19.22144, 72.8653], 14.25); // Default center near the middle of all locations
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -102,6 +106,8 @@
 
 </body>
 </html>
+
+
 
 
 
