@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         #map {
-            height: 1000px;
+            height: 500px;
             width: 100%;
         }
         /* Style for custom labels */
@@ -59,7 +59,7 @@
 
         function createMarker(location) {
             // Initial icon size and label box size based on map zoom
-            const iconSize = map.getZoom() > 13 ? [40, 10] : [60, 20];
+            const iconSize = map.getZoom() > 13 ? [60, 20] : [40, 10];
 
             // Create a custom divIcon for each marker with a location name
             const icon = L.divIcon({
