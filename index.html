@@ -14,8 +14,7 @@
         /* Style for flag icon markers */
         .flag-icon {
             position: relative;
-            display: flex;
-            align-items: center;
+            display: inline-block;
         }
 
         .flag-icon img {
@@ -23,11 +22,24 @@
             width: auto;
         }
 
-        .flag-icon span {
+        /* Tooltip style */
+        .tooltip {
+            display: none; /* Initially hidden */
+            position: absolute;
+            background-color: #fff;
+            color: #333;
             font-size: 12px;
             font-weight: bold;
-            color: #333;
-            margin-left: 5px; /* Space between the flag and text */
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 3px;
+            white-space: nowrap;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Show tooltip on hover */
+        .flag-icon:hover .tooltip {
+            display: block;
         }
     </style>
 </head>
@@ -54,13 +66,13 @@
         ];
 
         function createMarker(location) {
-            // Create a custom divIcon with the flag image and location name
+            // Create a custom divIcon with the flag image and a hidden tooltip
             const icon = L.divIcon({
-                className: 'flag-icon',
+                className: '',
                 html: `
                     <div class="flag-icon">
                         <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png?9898922749706957214" alt="flag">
-                        <span>${location.name}</span>
+                        <div class="tooltip">${location.name}</div>
                     </div>
                 `,
                 iconSize: null, // Automatically scale to content size
@@ -73,7 +85,7 @@
         // Create markers for all locations
         locations.forEach(createMarker);
 
-        // Adjust flag size dynamically during zoom events
+        // Dynamically adjust flag size during zoom events
         map.on('zoom', function () {
             const zoom = map.getZoom();
             const newSize = zoom > 14 ? '35px' : '25px'; // Larger flags at higher zoom levels
