@@ -18,7 +18,20 @@
             font-size: 14px;
             font-weight: bold;
             color: #333;
-            box-shadow: 0.5px 0.5px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Add icon style */
+        .icon-location {
+            width: 20px;
+            height: 20px;
+            background-color: #f00;  /* red icon */
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -44,18 +57,39 @@
             { name: "Ryan School", lat: 19.2131, lon: 72.8622 }
         ];
 
-        locations.forEach(function(location) {
+        function createMarker(location) {
+            // Initial icon size and label box size based on map zoom
+            const iconSize = map.getZoom() > 13 ? [100, 40] : [80, 30];
+
+            // Create a custom divIcon for each marker with a location name
             const icon = L.divIcon({
                 className: 'custom-label',
-                html: `<div>${location.name}</div>`,
-                iconSize: [100, 40],
-                iconAnchor: [50, 20],
+                html: `<div class="icon-location"></div><div>${location.name}</div>`,
+                iconSize: iconSize,
+                iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
             });
 
-            L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
-        });
+            const marker = L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
+
+            // Add a listener for zoom events to adjust icon size dynamically
+            map.on('zoom', function() {
+                const zoom = map.getZoom();
+                const newSize = zoom > 13 ? [100, 40] : [80, 30];
+                marker.setIcon(L.divIcon({
+                    className: 'custom-label',
+                    html: `<div class="icon-location"></div><div>${location.name}</div>`,
+                    iconSize: newSize,
+                    iconAnchor: [newSize[0] / 2, newSize[1] / 2],
+                }));
+            });
+        }
+
+        // Create markers for all locations
+        locations.forEach(createMarker);
+
     </script>
 
 </body>
 </html>
+
 
