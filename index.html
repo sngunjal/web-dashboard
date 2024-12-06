@@ -11,36 +11,29 @@
             width: 60%;
         }
 
-        /* Style for triangular flag markers */
+        /* Style for flag icon markers */
         .flag-icon {
             position: relative;
-            display: inline-block;
-            background-color: lightblue;
-            color: #333;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 2px;
-            white-space: nowrap;
+            display: flex;
+            align-items: center;
         }
 
-        .flag-icon:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-style: solid;
-            border-width: 10px 6px 0 6px;
-            border-color: lightblue transparent transparent transparent;
-            transform: translateX(-50%);
+        .flag-icon img {
+            height: 25px; /* Adjust the size of the flag icon */
+            width: auto;
+        }
+
+        .flag-icon span {
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            margin-left: 5px; /* Space between the flag and text */
         }
     </style>
 </head>
 <body>
 
-    <h1>Map with Five Locations</h1>
+    <h1>Map with Flag Icons</h1>
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -61,35 +54,38 @@
         ];
 
         function createMarker(location) {
-            const iconSize = 14; // Font size for the text in the flag
-
-            // Create a custom divIcon for triangular flags
+            // Create a custom divIcon with the flag image and location name
             const icon = L.divIcon({
-                className: '',
-                html: `<div class="flag-icon">${location.name}</div>`,
-                iconSize: null, // Size dynamically adjusts to content
-                iconAnchor: [0, 0], // Align flag to the location
+                className: 'flag-icon',
+                html: `
+                    <div class="flag-icon">
+                        <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png?9898922749706957214" alt="flag">
+                        <span>${location.name}</span>
+                    </div>
+                `,
+                iconSize: null, // Automatically scale to content size
+                iconAnchor: [12, 25], // Align the base of the flag to the marker position
             });
 
-            const marker = L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
-
-            // Dynamically adjust flag font size and scaling during zoom
-            map.on('zoom', function() {
-                const zoom = map.getZoom();
-                const adjustedFontSize = Math.max(10, Math.min(18, zoom * 1.2)); // Font size based on zoom
-                const flagElements = document.getElementsByClassName("flag-icon");
-                Array.from(flagElements).forEach(el => {
-                    el.style.fontSize = `${adjustedFontSize}px`;
-                });
-            });
+            L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
         }
 
         // Create markers for all locations
         locations.forEach(createMarker);
+
+        // Adjust flag size dynamically during zoom events
+        map.on('zoom', function () {
+            const zoom = map.getZoom();
+            const newSize = zoom > 14 ? '35px' : '25px'; // Larger flags at higher zoom levels
+            document.querySelectorAll('.flag-icon img').forEach(img => {
+                img.style.height = newSize;
+            });
+        });
     </script>
 
 </body>
 </html>
+
 
 
 
