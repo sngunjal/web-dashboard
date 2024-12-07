@@ -103,10 +103,91 @@
             });
         });
     </script>
-
 </body>
 </html>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Map Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 60%;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Realtime Map with Firebase</h1>
+    <div id="map"></div>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDOEFy38vhYwAJic-EmRMmi2Vmx1ooKk-0",
+            authDomain: "colonymate.firebaseapp.com",
+            databaseURL: "https://colonymate-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "colonymate",
+            storageBucket: "colonymate.firebasestorage.app",
+            messagingSenderId: "511804040457",
+            appId: "1:511804040457:web:905b654d9062176b075fd8",
+            measurementId: "G-LLNTT9EKR2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Initialize Leaflet Map
+        const map = L.map('map').setView([19.22144, 72.8653], 14.25);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Object to hold markers for real-time updates
+        const markers = {};
+
+        // Function to update or add a marker
+        function updateMarker(deviceId, lat, lon) {
+            if (markers[deviceId]) {
+                // Update marker position
+                markers[deviceId].setLatLng([lat, lon]);
+            } else {
+                // Add new marker
+                const marker = L.marker([lat, lon]).addTo(map).bindPopup(`Device: ${deviceId}`);
+                markers[deviceId] = marker;
+            }
+        }
+
+        // Real-time tracking for bus1
+        database.ref('busLocations/bus1').on('value', (snapshot) => {
+            const bus1Location = snapshot.val();
+            if (bus1Location) {
+                const { lat, lon } = bus1Location;
+                updateMarker("Bus 1", lat, lon);
+            }
+        });
+
+        // Real-time tracking for bus2
+        database.ref('busLocations/bus2').on('value', (snapshot) => {
+            const bus2Location = snapshot.val();
+            if (bus2Location) {
+                const { lat, lon } = bus2Location;
+                updateMarker("Bus 2", lat, lon);
+            }
+        });
+    </script>
+
+</body>
+</html>
 
 
 
