@@ -86,14 +86,14 @@
         const bus1Icon = L.icon({
             iconUrl: './Bus1 icon.jfif', // Update path if needed
             iconSize: [20, 20], // Size of the icon
-            iconAnchor: [20, 40], // Point of the icon which corresponds to marker's location
+            iconAnchor: [10, 20], // Point of the icon which corresponds to marker's location
             popupAnchor: [0, -40] // Position of popup relative to the icon
         });
 
         const bus2Icon = L.icon({
             iconUrl: './Bus2 icon.jfif', // Update path if needed
             iconSize: [20, 20],
-            iconAnchor: [20, 40],
+            iconAnchor: [10, 20],
             popupAnchor: [0, -40]
         });
         
@@ -112,7 +112,18 @@ function updateMarker(deviceId, lat, lon, icon) {
         markers[deviceId] = marker; // Store marker reference
     }
 }
+// Adjust icon size dynamically on zoom
+map.on('zoom', function () {
+    const zoom = map.getZoom();
+    const newSize = zoom > 14 ? 40 : 20; // Larger size for zoom > 14
 
+    // Update icon size for both buses
+    document.querySelectorAll('.bus-icon img').forEach(img => {
+        img.style.width = `${newSize}px`;
+        img.style.height = `${newSize}px`;
+    });
+});
+        
 // Real-time Tracking for Bus 1
 database.ref('busLocations/bus1').on('value', (snapshot) => {
     const bus1Data = snapshot.val();
