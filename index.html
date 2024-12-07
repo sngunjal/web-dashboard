@@ -115,7 +115,7 @@ function updateMarker(deviceId, lat, lon, icon) {
 // Adjust icon size dynamically on zoom
 map.on('zoom', function () {
     const zoom = map.getZoom();
-    const newSize = zoom > 6 ? 40 : 20; // Larger size for zoom > 14
+    const newSize = zoom > 2 ? 40 : 20; // Larger size for zoom > 14
 
     // Update icon size for both buses
     document.querySelectorAll('.bus-icon img').forEach(img => {
