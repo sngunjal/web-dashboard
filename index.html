@@ -87,34 +87,40 @@
         const markers = {};
 
         // Function to update or add a marker
-        function updateMarker(deviceId, lat, lon) {
-            if (markers[deviceId]) {
-                // Update marker position
-                markers[deviceId].setLatLng([lat, lon]);
-            } else {
-                // Add new marker
-                const marker = L.marker([lat, lon]).addTo(map).bindPopup(`Device: ${deviceId}`);
-                markers[deviceId] = marker;
-            }
-        }
+       // Firebase and Leaflet setup as before...
 
-        // Real-time tracking for bus1
-        database.ref('busLocations/bus1').on('value', (snapshot) => {
-            const bus1Location = snapshot.val();
-            if (bus1Location) {
-                const { lat, lon } = bus1Location;
-                updateMarker("Bus 1", lat, lon);
+// Update Marker Function
+function updateMarker(deviceId, lat, lon) {
+    if (markers[deviceId]) {
+        markers[deviceId].setLatLng([lat, lon]); // Update existing marker
+    } else {
+        const marker = L.marker([lat, lon]).addTo(map).bindPopup(`Device: ${deviceId}`);
+        markers[deviceId] = marker; // Store marker reference
+    }
+}
+
+// Real-time Tracking for Bus 1
+database.ref('busLocations/bus1').on('value', (snapshot) => {
+    const bus1Data = snapshot.val();
+    if (bus1Data) {
+        Object.values(bus1Data).forEach((entry) => {
+            if (entry.lat && entry.lon) {
+                updateMarker("Bus 1", entry.lat, entry.lon);
             }
         });
-
+    }
+});
         // Real-time tracking for bus2
         database.ref('busLocations/bus2').on('value', (snapshot) => {
-            const bus2Location = snapshot.val();
-            if (bus2Location) {
-                const { lat, lon } = bus2Location;
-                updateMarker("Bus 2", lat, lon);
+    const bus2Data = snapshot.val();
+    if (bus2Data) {
+        Object.values(bus2Data).forEach((entry) => {
+            if (entry.lat && entry.lon) {
+                updateMarker("Bus 2", entry.lat, entry.lon);
             }
         });
+    }
+});
 
         // Static locations with flag icons
         const locations = [
