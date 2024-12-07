@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map Dashboard</title>
+    <title>Realtime Map with Flag Icons</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
         #map {
             height: 400px;
@@ -45,87 +48,7 @@
 </head>
 <body>
 
-    <h1>Map with Flag Icons</h1>
-    <div id="map"></div>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        // Define the bounding box to exclude regions west of 72.8528 and east of 72.887
-        const bounds = L.latLngBounds(
-            [19.2100, 72.8528], // Southwest corner of the bounding box
-            [19.2400, 72.8870]  // Northeast corner of the bounding box
-        );
-
-        var map = L.map('map', {
-            maxBounds: bounds, // Restrict the map to this area
-            maxBoundsViscosity: 1.0 // Makes the bounding restriction feel more natural
-        }).setView([19.22144, 72.8653], 14.25); // Default center near the middle of all locations
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Locations and markers
-        const locations = [
-            { name: "Colony", lat: 19.214432, lon: 72.878878 },
-            { name: "SGNP Gate", lat: 19.2314, lon: 72.8636 },
-            { name: "Station", lat: 19.2314, lon: 72.859 },
-            { name: "St John School", lat: 19.2177, lon: 72.8703 },
-            { name: "Ryan School", lat: 19.2131, lon: 72.8622 }
-        ];
-
-        function createMarker(location) {
-            // Create a custom divIcon with the flag image and a hidden tooltip
-            const icon = L.divIcon({
-                className: '',
-                html: `
-                    <div class="flag-icon">
-                        <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png?9898922749706957214" alt="flag">
-                        <div class="tooltip">${location.name}</div>
-                    </div>
-                `,
-                iconSize: null, // Automatically scale to content size
-                iconAnchor: [12, 25], // Align the base of the flag to the marker position
-            });
-
-            L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
-        }
-
-        // Create markers for all locations
-        locations.forEach(createMarker);
-
-        // Dynamically adjust flag size during zoom events
-        map.on('zoom', function () {
-            const zoom = map.getZoom();
-            const newSize = zoom > 14 ? '35px' : '25px'; // Larger flags at higher zoom levels
-            document.querySelectorAll('.flag-icon img').forEach(img => {
-                img.style.height = newSize;
-            });
-        });
-    </script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realtime Map Dashboard</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        #map {
-            height: 400px;
-            width: 60%;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>Realtime Map with Firebase</h1>
+    <h1>Realtime Map with Flag Icons</h1>
     <div id="map"></div>
 
     <script>
@@ -145,8 +68,16 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Initialize Leaflet Map
-        const map = L.map('map').setView([19.22144, 72.8653], 14.25);
+        // Define the bounding box to exclude regions west of 72.8528 and east of 72.887
+        const bounds = L.latLngBounds(
+            [19.2100, 72.8528], // Southwest corner of the bounding box
+            [19.2400, 72.8870]  // Northeast corner of the bounding box
+        );
+
+        var map = L.map('map', {
+            maxBounds: bounds, // Restrict the map to this area
+            maxBoundsViscosity: 1.0 // Makes the bounding restriction feel more natural
+        }).setView([19.22144, 72.8653], 14.25); // Default center near the middle of all locations
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -184,10 +115,49 @@
                 updateMarker("Bus 2", lat, lon);
             }
         });
+
+        // Static locations with flag icons
+        const locations = [
+            { name: "Colony", lat: 19.214432, lon: 72.878878 },
+            { name: "SGNP Gate", lat: 19.2314, lon: 72.8636 },
+            { name: "Station", lat: 19.2314, lon: 72.859 },
+            { name: "St John School", lat: 19.2177, lon: 72.8703 },
+            { name: "Ryan School", lat: 19.2131, lon: 72.8622 }
+        ];
+
+        function createFlagMarker(location) {
+            // Create a custom divIcon with the flag image and a hidden tooltip
+            const icon = L.divIcon({
+                className: '',
+                html: `
+                    <div class="flag-icon">
+                        <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png?9898922749706957214" alt="flag">
+                        <div class="tooltip">${location.name}</div>
+                    </div>
+                `,
+                iconSize: null, // Automatically scale to content size
+                iconAnchor: [12, 25], // Align the base of the flag to the marker position
+            });
+
+            L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
+        }
+
+        // Add flag markers for static locations
+        locations.forEach(createFlagMarker);
+
+        // Dynamically adjust flag size during zoom events
+        map.on('zoom', function () {
+            const zoom = map.getZoom();
+            const newSize = zoom > 14 ? '35px' : '25px'; // Larger flags at higher zoom levels
+            document.querySelectorAll('.flag-icon img').forEach(img => {
+                img.style.height = newSize;
+            });
+        });
     </script>
 
 </body>
 </html>
+
 
 
 
