@@ -82,112 +82,86 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-// Custom Icons
+
+        // Initial icon size
+        let iconSize = [20, 20]; // Default icon size
+
+        // Custom Icons
         const bus1Icon = L.icon({
             iconUrl: './Bus1 icon.jfif', // Update path if needed
-            iconSize: [20, 20], // Size of the icon
+            iconSize: iconSize, // Size of the icon
             iconAnchor: [10, 20], // Point of the icon which corresponds to marker's location
             popupAnchor: [0, -40] // Position of popup relative to the icon
         });
 
         const bus2Icon = L.icon({
             iconUrl: './Bus2 icon.jfif', // Update path if needed
-            iconSize: [20, 20],
+            iconSize: iconSize,
             iconAnchor: [10, 20],
             popupAnchor: [0, -40]
         });
-        
+
+        // Update the icon size dynamically on zoom
+        map.on('zoom', function () {
+            const zoom = map.getZoom();
+            const newSize = zoom > 14 ? [40, 40] : [20, 20]; // Larger size for zoom > 14
+
+            // Update the icon size
+            bus1Icon.options.iconSize = newSize;
+            bus2Icon.options.iconSize = newSize;
+
+            // Optionally, update the marker to apply new size immediately
+            Object.values(markers).forEach(marker => {
+                marker.setIcon(L.icon({
+                    iconUrl: marker.options.icon.options.iconUrl,
+                    iconSize: newSize,
+                    iconAnchor: [10, 20],
+                    popupAnchor: [0, -40]
+                }));
+            });
+        });
+
         // Object to hold markers for real-time updates
         const markers = {};
 
         // Function to update or add a marker
-       // Firebase and Leaflet setup as before...
-
-// Update Marker Function
-function updateMarker(deviceId, lat, lon, icon) {
-    if (markers[deviceId]) {
-        markers[deviceId].setLatLng([lat, lon]); // Update existing marker
-    } else {
-        const marker = L.marker([lat, lon], { icon: icon }).addTo(map).bindPopup(`Device: ${deviceId}`);
-        markers[deviceId] = marker; // Store marker reference
-    }
-}
-// Adjust icon size dynamically on zoom
-map.on('zoom', function () {
-    const zoom = map.getZoom();
-    const newSize = zoom > 14 ? 40 : 20; // Larger size for zoom > 14
-
-    // Update icon size for both buses
-    document.querySelectorAll('.bus-icon img').forEach(img => {
-        img.style.width = `${newSize}px`;
-        img.style.height = `${newSize}px`;
-    });
-});
-        
-// Real-time Tracking for Bus 1
-database.ref('busLocations/bus1').on('value', (snapshot) => {
-    const bus1Data = snapshot.val();
-    if (bus1Data) {
-        Object.values(bus1Data).forEach((entry) => {
-            if (entry.lat && entry.lon) {
-                updateMarker("Bus 1", entry.lat, entry.lon, bus1Icon);
+        function updateMarker(deviceId, lat, lon, icon) {
+            if (markers[deviceId]) {
+                markers[deviceId].setLatLng([lat, lon]); // Update existing marker
+            } else {
+                const marker = L.marker([lat, lon], { icon: icon }).addTo(map).bindPopup(`Device: ${deviceId}`);
+                markers[deviceId] = marker; // Store marker reference
             }
-        });
-    }
-});
-        // Real-time tracking for bus2
-        database.ref('busLocations/bus2').on('value', (snapshot) => {
-    const bus2Data = snapshot.val();
-    if (bus2Data) {
-        Object.values(bus2Data).forEach((entry) => {
-            if (entry.lat && entry.lon) {
-                updateMarker("Bus 2", entry.lat, entry.lon, bus2Icon);
-            }
-        });
-    }
-});
-
-        // Static locations with flag icons
-        const locations = [
-            { name: "Colony", lat: 19.214432, lon: 72.878878 },
-            { name: "SGNP Gate", lat: 19.2314, lon: 72.8636 },
-            { name: "Station", lat: 19.2314, lon: 72.859 },
-            { name: "St John School", lat: 19.2177, lon: 72.8703 },
-            { name: "Ryan School", lat: 19.2131, lon: 72.8622 }
-        ];
-
-        function createFlagMarker(location) {
-            // Create a custom divIcon with the flag image and a hidden tooltip
-            const icon = L.divIcon({
-                className: '',
-                html: `
-                    <div class="flag-icon">
-                        <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png?9898922749706957214" alt="flag">
-                        <div class="tooltip">${location.name}</div>
-                    </div>
-                `,
-                iconSize: null, // Automatically scale to content size
-                iconAnchor: [12, 25], // Align the base of the flag to the marker position
-            });
-
-            L.marker([location.lat, location.lon], { icon: icon }).addTo(map);
         }
 
-        // Add flag markers for static locations
-        locations.forEach(createFlagMarker);
+        // Real-time Tracking for Bus 1
+        database.ref('busLocations/bus1').on('value', (snapshot) => {
+            const bus1Data = snapshot.val();
+            if (bus1Data) {
+                Object.values(bus1Data).forEach((entry) => {
+                    if (entry.lat && entry.lon) {
+                        updateMarker("Bus 1", entry.lat, entry.lon, bus1Icon);
+                    }
+                });
+            }
+        });
 
-        // Dynamically adjust flag size during zoom events
-        map.on('zoom', function () {
-            const zoom = map.getZoom();
-            const newSize = zoom > 14 ? '35px' : '25px'; // Larger flags at higher zoom levels
-            document.querySelectorAll('.flag-icon img').forEach(img => {
-                img.style.height = newSize;
-            });
+        // Real-time tracking for Bus 2
+        database.ref('busLocations/bus2').on('value', (snapshot) => {
+            const bus2Data = snapshot.val();
+            if (bus2Data) {
+                Object.values(bus2Data).forEach((entry) => {
+                    if (entry.lat && entry.lon) {
+                        updateMarker("Bus 2", entry.lat, entry.lon, bus2Icon);
+                    }
+                });
+            }
         });
     </script>
 
 </body>
 </html>
+
 
 
 
