@@ -98,7 +98,7 @@
         // Update the icon size dynamically on zoom
         map.on('zoom', function () {
             const zoom = map.getZoom();
-            const newSize = zoom > 14 ? [40, 40] : [20, 20]; // Larger size for zoom > 14
+            const newSize = zoom > 14 ? [30, 30] : [20, 20]; // Larger size for zoom > 14
 
             // Update the icon size
             bus1Icon.options.iconSize = newSize;
