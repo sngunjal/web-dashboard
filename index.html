@@ -77,20 +77,45 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+        // Initial icon size
+        let iconSize = [20, 20]; // Default icon size
+
+        // Custom Icons
         const bus1Icon = L.icon({
-            iconUrl: './Bus1 icon.jfif',
-            iconSize: [20, 20],
-            iconAnchor: [10, 20],
-            popupAnchor: [0, -40]
+            iconUrl: './Bus1 icon.jfif', // Update path if needed
+            iconSize: iconSize, // Size of the icon
+            iconAnchor: [10, 20], // Point of the icon which corresponds to marker's location
+            popupAnchor: [0, -40] // Position of popup relative to the icon
         });
 
         const bus2Icon = L.icon({
-            iconUrl: './Bus2 icon.jfif',
-            iconSize: [20, 20],
+            iconUrl: './Bus2 icon.jfif', // Update path if needed
+            iconSize: iconSize,
             iconAnchor: [10, 20],
             popupAnchor: [0, -40]
         });
 
+        // Update the icon size dynamically on zoom
+        map.on('zoom', function () {
+            const zoom = map.getZoom();
+            const newSize = zoom > 14 ? [40, 40] : [20, 20]; // Larger size for zoom > 14
+
+            // Update the icon size
+            bus1Icon.options.iconSize = newSize;
+            bus2Icon.options.iconSize = newSize;
+
+            // Optionally, update the marker to apply new size immediately
+            Object.values(markers).forEach(marker => {
+                marker.setIcon(L.icon({
+                    iconUrl: marker.options.icon.options.iconUrl,
+                    iconSize: newSize,
+                    iconAnchor: [10, 20],
+                    popupAnchor: [0, -40]
+                }));
+            });
+        });
+
+ // Object to hold markers for real-time updates
         const markers = {};
 
         function updateMarker(deviceId, lat, lon, icon) {
