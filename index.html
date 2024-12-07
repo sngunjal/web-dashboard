@@ -21,7 +21,7 @@
         }
 
         .flag-icon img {
-            height: 25px; /* Adjust the size of the flag icon */
+            height: 30px; /* Adjust the size of the flag icon */
             width: auto;
         }
 
@@ -82,7 +82,21 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+// Custom Icons
+        const bus1Icon = L.icon({
+            iconUrl: './Bus1 icon.jfif', // Update path if needed
+            iconSize: [40, 40], // Size of the icon
+            iconAnchor: [20, 40], // Point of the icon which corresponds to marker's location
+            popupAnchor: [0, -40] // Position of popup relative to the icon
+        });
 
+        const bus2Icon = L.icon({
+            iconUrl: './Bus2 icon.jfif', // Update path if needed
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40]
+        });
+        
         // Object to hold markers for real-time updates
         const markers = {};
 
@@ -90,11 +104,11 @@
        // Firebase and Leaflet setup as before...
 
 // Update Marker Function
-function updateMarker(deviceId, lat, lon) {
+function updateMarker(deviceId, lat, lon, icon) {
     if (markers[deviceId]) {
         markers[deviceId].setLatLng([lat, lon]); // Update existing marker
     } else {
-        const marker = L.marker([lat, lon]).addTo(map).bindPopup(`Device: ${deviceId}`);
+        const marker = L.marker([lat, lon], { icon: icon }).addTo(map).bindPopup(`Device: ${deviceId}`);
         markers[deviceId] = marker; // Store marker reference
     }
 }
@@ -105,7 +119,7 @@ database.ref('busLocations/bus1').on('value', (snapshot) => {
     if (bus1Data) {
         Object.values(bus1Data).forEach((entry) => {
             if (entry.lat && entry.lon) {
-                updateMarker("Bus 1", entry.lat, entry.lon);
+                updateMarker("Bus 1", entry.lat, entry.lon, bus1Icon);
             }
         });
     }
@@ -116,7 +130,7 @@ database.ref('busLocations/bus1').on('value', (snapshot) => {
     if (bus2Data) {
         Object.values(bus2Data).forEach((entry) => {
             if (entry.lat && entry.lon) {
-                updateMarker("Bus 2", entry.lat, entry.lon);
+                updateMarker("Bus 2", entry.lat, entry.lon, bus2Icon);
             }
         });
     }
