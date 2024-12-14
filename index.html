@@ -46,18 +46,17 @@
 <body>
 
     <h1>Realtime Map with Flag Icons</h1>
-    <div id="report-container">
-    <h2>Looker Studio Dashboard</h2>
-    <iframe
-        src="https://lookerstudio.google.com/reporting/smNX5Syt3S8/page/1"
-        width="100%"
-        height="500"
-        frameborder="0"
-        allowfullscreen>
-    </iframe>
-</div>
-
-
+    <div id="map"></div>
+ <div id="report-container">
+        <h2>Looker Studio Dashboard</h2>
+        <iframe
+            src="https://lookerstudio.google.com/embed/reporting/92a8995f-d24d-492f-82d6-aea43d3710a0/page/1"
+            width="100%"
+            height="100%"
+            frameborder="0"
+            allowfullscreen>
+        </iframe>
+    </div>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDOEFy38vhYwAJic-EmRMmi2Vmx1ooKk-0",
@@ -132,7 +131,7 @@
             if (markers[deviceId]) {
                 markers[deviceId].setLatLng([lat, lon]);
             } else {
-                const marker = L.marker([lat, lon], { icon: icon }).addTo(map).bindPopup(`Device: ${deviceId}`);
+                const marker = L.marker([lat, lon], { icon: icon }).addTo(map).bindPopup(Device: ${deviceId});
                 markers[deviceId] = marker;
             }
         }
@@ -141,8 +140,8 @@
             const zoom = map.getZoom();
             const newSize = zoom > 14 ? 40 : 20;
             document.querySelectorAll('.bus-icon img').forEach(img => {
-                img.style.width = `${newSize}px`;
-                img.style.height = `${newSize}px`;
+                img.style.width = ${newSize}px;
+                img.style.height = ${newSize}px;
             });
         });
 
@@ -179,10 +178,10 @@
         function createFlagMarker(location) {
             const icon = L.divIcon({
                 className: '',
-                html: `<div class="flag-icon">
+                html: <div class="flag-icon">
                         <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png?9898922749706957214" alt="flag">
                         <div class="tooltip">${location.name}</div>
-                    </div>`,
+                    </div>,
                 iconSize: null,
                 iconAnchor: [12, 25],
             });
