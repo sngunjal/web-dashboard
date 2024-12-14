@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realtime Map with Flag Icons</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.css" rel="stylesheet" />
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-        
+
         const firebaseConfig = {
             apiKey: "AIzaSyDOEFy38vhYwAJic-EmRMmi2Vmx1ooKk-0",
             authDomain: "colonymate.firebaseapp.com",
@@ -23,6 +25,9 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
+        // Mapbox API Key
+        const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q"; // Replace with your Mapbox access token
+
         const bounds = L.latLngBounds(
             [19.2100, 72.8528],
             [19.2400, 72.8870]
@@ -33,8 +38,10 @@
             maxBoundsViscosity: 1.0
         }).setView([19.22144, 72.8653], 14.25);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${MAPBOX_API_KEY}`, {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+            tileSize: 512,
+            zoomOffset: -1
         }).addTo(map);
 
         // Initial icon size
@@ -156,11 +163,10 @@
     <style>
         #map {
             height: 350px;
-    width: 100%;
-    border-radius: 15px; /* Curved corners */
-    overflow: hidden; /* Ensure map content stays within rounded edges */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
-
+            width: 100%;
+            border-radius: 15px; /* Curved corners */
+            overflow: hidden; /* Ensure map content stays within rounded edges */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
         }
 
         .flag-icon {
@@ -207,4 +213,5 @@
     </div>
 </body>
 </html>
+
 
