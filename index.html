@@ -5,60 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realtime Map with Flag Icons</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        #map {
-            height: 350px;
-            width: 60%;
-        }
-
-        .flag-icon {
-            position: relative;
-            display: inline-block;
-        }
-
-        .flag-icon img {
-            height: 30px;
-            width: auto;
-        }
-
-        .tooltip {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            color: #333;
-            font-size: 12px;
-            font-weight: bold;
-            border: 1px solid #ccc;
-            padding: 5px;
-            border-radius: 3px;
-            white-space: nowrap;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-        .flag-icon:hover .tooltip {
-            display: block;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>Realtime Map with Flag Icons</h1>
-    <div id="map"></div>
- <div id="report-container">
-        <h2>Looker Studio Dashboard</h2>
-       <iframe 
-    src="https://lookerstudio.google.com/embed/reporting/92a8995f-d24d-492f-82d6-aea43d3710a0/page/yScYE" 
-    frameborder="0" 
-    style="border:0; width:100%; height:500px;" 
-    allowfullscreen 
-    sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-</iframe>
-
-    </div>
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+        
         const firebaseConfig = {
             apiKey: "AIzaSyDOEFy38vhYwAJic-EmRMmi2Vmx1ooKk-0",
             authDomain: "colonymate.firebaseapp.com",
@@ -70,8 +20,8 @@
             measurementId: "G-LLNTT9EKR2"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
         const bounds = L.latLngBounds(
             [19.2100, 72.8528],
@@ -125,7 +75,7 @@
             });
         });
 
- // Object to hold markers for real-time updates
+        // Object to hold markers for real-time updates
         const markers = {};
 
         function updateMarker(deviceId, lat, lon, icon) {
@@ -146,7 +96,8 @@
             });
         });
 
-        database.ref('busLocations/bus1').on('value', (snapshot) => {
+        const bus1Ref = ref(database, 'busLocations/bus1');
+        onValue(bus1Ref, (snapshot) => {
             const bus1Data = snapshot.val();
             if (bus1Data) {
                 Object.values(bus1Data).forEach((entry) => {
@@ -157,7 +108,8 @@
             }
         });
 
-        database.ref('busLocations/bus2').on('value', (snapshot) => {
+        const bus2Ref = ref(database, 'busLocations/bus2');
+        onValue(bus2Ref, (snapshot) => {
             const bus2Data = snapshot.val();
             if (bus2Data) {
                 Object.values(bus2Data).forEach((entry) => {
@@ -200,6 +152,55 @@
             });
         });
     </script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 350px;
+            width: 60%;
+        }
 
+        .flag-icon {
+            position: relative;
+            display: inline-block;
+        }
+
+        .flag-icon img {
+            height: 30px;
+            width: auto;
+        }
+
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            color: #333;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 3px;
+            white-space: nowrap;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .flag-icon:hover .tooltip {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Realtime Map with Flag Icons</h1>
+    <div id="map"></div>
+    <div id="report-container">
+        <h2>Looker Studio Dashboard</h2>
+        <iframe 
+            src="https://lookerstudio.google.com/embed/reporting/92a8995f-d24d-492f-82d6-aea43d3710a0/page/yScYE" 
+            frameborder="0" 
+            style="border:0; width:100%; height:500px;" 
+            allowfullscreen 
+            sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+        </iframe>
+    </div>
 </body>
 </html>
+
