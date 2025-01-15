@@ -63,7 +63,8 @@
 
         function rotateIcon(marker, angle) {
             const iconElement = marker.getElement().querySelector('img');
-            iconElement.style.transform = `rotate(${180 + angle}deg)`; // Rotate icon based on bearing
+            // Correcting the rotation to ensure the icon's top points correctly
+            iconElement.style.transform = `rotate(${angle}deg)`;
         }
 
         function calculateBearing(lat1, lon1, lat2, lon2) {
@@ -180,6 +181,7 @@
     <div id="map"></div>
 </body>
 </html>
+
 
 
 
