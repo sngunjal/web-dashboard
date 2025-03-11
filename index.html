@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realtime Map with Flag Icons</title>
+    <title>Realtime Bus Tracking</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.css" rel="stylesheet" />
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
@@ -26,12 +27,9 @@
         const database = getDatabase(app);
 
         // Mapbox API Key
-        const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q"; // Replace with your Mapbox access token
+        const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q";
 
-        const bounds = L.latLngBounds(
-            [19.2100, 72.8528],
-            [19.2400, 72.8870]
-        );
+        const bounds = L.latLngBounds([19.2100, 72.8528], [19.2400, 72.8870]);
 
         var map = L.map('map', {
             maxBounds: bounds,
@@ -44,89 +42,55 @@
             zoomOffset: -1
         }).addTo(map);
 
-        // Initial icon size
-        let iconSize = [20, 20]; // Default icon size
-
         // Custom Icons
-        const bus1Icon = L.icon({
-            iconUrl: './BusblueIcon.png', // Update path if needed
-            iconSize: iconSize, // Size of the icon
-            iconAnchor: [10, 20], // Point of the icon which corresponds to marker's location
-            popupAnchor: [0, -40] // Position of popup relative to the icon
-        });
-
-        const bus2Icon = L.icon({
-            iconUrl: './BusgreenIcon.png', // Update path if needed
-            iconSize: iconSize,
+        const busIcon = L.icon({
+            iconUrl: './BusblueIcon.png',
+            iconSize: [20, 20],
             iconAnchor: [10, 20],
             popupAnchor: [0, -40]
         });
 
-        // Update the icon size dynamically on zoom
-        map.on('zoom', function () {
-            const zoom = map.getZoom();
-            const newSize = zoom > 14 ? [30, 30] : [20, 20]; // Larger size for zoom > 14
-
-            // Update the icon size
-            bus1Icon.options.iconSize = newSize;
-            bus2Icon.options.iconSize = newSize;
-
-            // Optionally, update the marker to apply new size immediately
-            Object.values(markers).forEach(marker => {
-                marker.setIcon(L.icon({
-                    iconUrl: marker.options.icon.options.iconUrl,
-                    iconSize: newSize,
-                    iconAnchor: [10, 20],
-                    popupAnchor: [0, -40]
-                }));
-            });
-        });
-
-        // Object to hold markers for real-time updates
+        // Store markers for real-time updates
         const markers = {};
 
-        function updateMarker(deviceId, lat, lon, icon) {
+        function updateMarker(deviceId, lat, lon) {
             if (markers[deviceId]) {
                 markers[deviceId].setLatLng([lat, lon]);
             } else {
-                const marker = L.marker([lat, lon], { icon: icon }).addTo(map).bindPopup(`Device: ${deviceId}`);
+                const marker = L.marker([lat, lon], { icon: busIcon })
+                    .addTo(map)
+                    .bindPopup(`<b>Device:</b> <a href="tel:${deviceId}">${deviceId}</a>`); // Clickable phone number
                 markers[deviceId] = marker;
             }
         }
 
-        map.on('zoom', function () {
-            const zoom = map.getZoom();
-            const newSize = zoom > 14 ? 40 : 20;
-            document.querySelectorAll('.bus-icon img').forEach(img => {
-                img.style.width = `${newSize}px`;
-                img.style.height = `${newSize}px`;
-            });
-        });
-
+        // Fetch bus 1 data
         const bus1Ref = ref(database, 'busLocations/bus1');
         onValue(bus1Ref, (snapshot) => {
-            const bus1Data = snapshot.val();
-            if (bus1Data) {
-                Object.values(bus1Data).forEach((entry) => {
+            const data = snapshot.val();
+            if (data) {
+                Object.values(data).forEach(entry => {
                     if (entry.lat && entry.lon) {
-                        updateMarker("Bus 1", entry.lat, entry.lon, bus1Icon);
+                        updateMarker("9136998836", entry.lat, entry.lon);
                     }
                 });
             }
         });
 
+        // Fetch bus 2 data
         const bus2Ref = ref(database, 'busLocations/bus2');
         onValue(bus2Ref, (snapshot) => {
-            const bus2Data = snapshot.val();
-            if (bus2Data) {
-                Object.values(bus2Data).forEach((entry) => {
+            const data = snapshot.val();
+            if (data) {
+                Object.values(data).forEach(entry => {
                     if (entry.lat && entry.lon) {
-                        updateMarker("Bus 2", entry.lat, entry.lon, bus2Icon);
+                        updateMarker("9136828236", entry.lat, entry.lon);
                     }
                 });
             }
         });
 
+        // Flag locations
         const locations = [
             { name: "Colony", lat: 19.214432, lon: 72.878878 },
             { name: "SGNP Gate", lat: 19.2314, lon: 72.8636 },
@@ -151,24 +115,19 @@
 
         locations.forEach(createFlagMarker);
 
-        map.on('zoom', function () {
-            const zoom = map.getZoom();
-            const newSize = zoom > 14 ? '35px' : '25px';
-            document.querySelectorAll('.flag-icon img').forEach(img => {
-                img.style.height = newSize;
-            });
-        });
     </script>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <style>
         #map {
             height: 600px;
             width: 100%;
-            border-radius: 25px; /* Curved corners */
-            overflow: hidden; /* Ensure map content stays within rounded edges */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-
+        
         .flag-icon {
             position: relative;
             display: inline-block;
@@ -202,6 +161,7 @@
     <div id="map"></div>
 </body>
 </html>
+
 
 
 
