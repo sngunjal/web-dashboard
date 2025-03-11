@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realtime Bus Tracking</title>
+    <title>Realtime Map with Flag Icons</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.css" rel="stylesheet" />
-    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
@@ -27,9 +26,12 @@
         const database = getDatabase(app);
 
         // Mapbox API Key
-        const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q";
+        const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q"; // Replace with your Mapbox access token
 
-        const bounds = L.latLngBounds([19.2100, 72.8528], [19.2400, 72.8870]);
+        const bounds = L.latLngBounds(
+            [19.2100, 72.8528],
+            [19.2400, 72.8870]
+        );
 
         var map = L.map('map', {
             maxBounds: bounds,
@@ -42,55 +44,85 @@
             zoomOffset: -1
         }).addTo(map);
 
-        // Custom Icons
-        const busIcon = L.icon({
-            iconUrl: './BusblueIcon.png',
-            iconSize: [20, 20],
+        let iconSize = [20, 20]; 
+
+        const bus1Icon = L.icon({
+            iconUrl: './BusblueIcon.png', 
+            iconSize: iconSize, 
+            iconAnchor: [10, 20], 
+            popupAnchor: [0, -40] 
+        });
+
+        const bus2Icon = L.icon({
+            iconUrl: './BusgreenIcon.png', 
+            iconSize: iconSize,
             iconAnchor: [10, 20],
             popupAnchor: [0, -40]
         });
 
-        // Store markers for real-time updates
+        map.on('zoom', function () {
+            const zoom = map.getZoom();
+            const newSize = zoom > 14 ? [30, 30] : [20, 20]; 
+
+            bus1Icon.options.iconSize = newSize;
+            bus2Icon.options.iconSize = newSize;
+
+            Object.values(markers).forEach(marker => {
+                marker.setIcon(L.icon({
+                    iconUrl: marker.options.icon.options.iconUrl,
+                    iconSize: newSize,
+                    iconAnchor: [10, 20],
+                    popupAnchor: [0, -40]
+                }));
+            });
+        });
+
         const markers = {};
 
-        function updateMarker(deviceId, lat, lon) {
+        function updateMarker(deviceId, lat, lon, icon) {
             if (markers[deviceId]) {
                 markers[deviceId].setLatLng([lat, lon]);
             } else {
-                const marker = L.marker([lat, lon], { icon: busIcon })
+                const marker = L.marker([lat, lon], { icon: icon })
                     .addTo(map)
-                    .bindPopup(`<b>Device:</b> <a href="tel:${deviceId}">${deviceId}</a>`); // Clickable phone number
+                    .bindPopup(`<b>Call:</b> <a href="tel:${deviceId}">${deviceId}</a>`); // Updated text
                 markers[deviceId] = marker;
             }
         }
 
-        // Fetch bus 1 data
+        map.on('zoom', function () {
+            const zoom = map.getZoom();
+            const newSize = zoom > 14 ? 40 : 20;
+            document.querySelectorAll('.bus-icon img').forEach(img => {
+                img.style.width = `${newSize}px`;
+                img.style.height = `${newSize}px`;
+            });
+        });
+
         const bus1Ref = ref(database, 'busLocations/bus1');
         onValue(bus1Ref, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                Object.values(data).forEach(entry => {
+            const bus1Data = snapshot.val();
+            if (bus1Data) {
+                Object.values(bus1Data).forEach((entry) => {
                     if (entry.lat && entry.lon) {
-                        updateMarker("9136998836", entry.lat, entry.lon);
+                        updateMarker("9136998836", entry.lat, entry.lon, bus1Icon); // Updated device name
                     }
                 });
             }
         });
 
-        // Fetch bus 2 data
         const bus2Ref = ref(database, 'busLocations/bus2');
         onValue(bus2Ref, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                Object.values(data).forEach(entry => {
+            const bus2Data = snapshot.val();
+            if (bus2Data) {
+                Object.values(bus2Data).forEach((entry) => {
                     if (entry.lat && entry.lon) {
-                        updateMarker("9136828236", entry.lat, entry.lon);
+                        updateMarker("9136828236", entry.lat, entry.lon, bus2Icon); // Updated device name
                     }
                 });
             }
         });
 
-        // Flag locations
         const locations = [
             { name: "Colony", lat: 19.214432, lon: 72.878878 },
             { name: "SGNP Gate", lat: 19.2314, lon: 72.8636 },
@@ -115,10 +147,15 @@
 
         locations.forEach(createFlagMarker);
 
+        map.on('zoom', function () {
+            const zoom = map.getZoom();
+            const newSize = zoom > 14 ? '35px' : '25px';
+            document.querySelectorAll('.flag-icon img').forEach(img => {
+                img.style.height = newSize;
+            });
+        });
     </script>
-
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
     <style>
         #map {
             height: 600px;
@@ -127,7 +164,7 @@
             overflow: hidden;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        
+
         .flag-icon {
             position: relative;
             display: inline-block;
@@ -161,6 +198,7 @@
     <div id="map"></div>
 </body>
 </html>
+
 
 
 
