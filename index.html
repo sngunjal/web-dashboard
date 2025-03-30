@@ -25,13 +25,9 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Mapbox API Key
-        const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q"; // Replace with your Mapbox access token
+        const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q";
 
-        const bounds = L.latLngBounds(
-            [19.2100, 72.8528],
-            [19.2400, 72.8870]
-        );
+        const bounds = L.latLngBounds([19.2100, 72.8528], [19.2400, 72.8870]);
 
         var map = L.map('map', {
             maxBounds: bounds,
@@ -47,14 +43,14 @@
         let iconSize = [20, 20]; 
 
         const bus1Icon = L.icon({
-            iconUrl: './BusblueIcon.png', 
+            iconUrl: './BusblueIcon.png',
             iconSize: iconSize, 
             iconAnchor: [10, 20], 
             popupAnchor: [0, -40] 
         });
 
         const bus2Icon = L.icon({
-            iconUrl: './BusgreenIcon.png', 
+            iconUrl: './BusgreenIcon.png',
             iconSize: iconSize,
             iconAnchor: [10, 20],
             popupAnchor: [0, -40]
@@ -85,42 +81,26 @@
             } else {
                 const marker = L.marker([lat, lon], { icon: icon })
                     .addTo(map)
-                    .bindPopup(`<b>Call:</b> <a href="tel:${deviceId}">${deviceId}</a>`); // Updated text
+                    .bindPopup(`<b>Call:</b> <a href="tel:${deviceId}">${deviceId}</a>`);
                 markers[deviceId] = marker;
             }
         }
 
-        map.on('zoom', function () {
-            const zoom = map.getZoom();
-            const newSize = zoom > 14 ? 40 : 20;
-            document.querySelectorAll('.bus-icon img').forEach(img => {
-                img.style.width = `${newSize}px`;
-                img.style.height = `${newSize}px`;
+        const deviceMap = {
+            "0861128067296753": { ref: ref(database, 'busLocations/bus1'), icon: bus1Icon, name: "9136998836" },
+            "0861128067297470": { ref: ref(database, 'busLocations/bus2'), icon: bus2Icon, name: "9136828236" }
+        };
+
+        Object.entries(deviceMap).forEach(([imei, config]) => {
+            onValue(config.ref, (snapshot) => {
+                const entries = snapshot.val();
+                if (entries) {
+                    const latest = Object.values(entries).pop();
+                    if (latest.lat && latest.lon) {
+                        updateMarker(config.name, latest.lat, latest.lon, config.icon);
+                    }
+                }
             });
-        });
-
-        const bus1Ref = ref(database, 'busLocations/bus1');
-        onValue(bus1Ref, (snapshot) => {
-            const bus1Data = snapshot.val();
-            if (bus1Data) {
-                Object.values(bus1Data).forEach((entry) => {
-                    if (entry.lat && entry.lon) {
-                        updateMarker("9136998836", entry.lat, entry.lon, bus1Icon); // Updated device name
-                    }
-                });
-            }
-        });
-
-        const bus2Ref = ref(database, 'busLocations/bus2');
-        onValue(bus2Ref, (snapshot) => {
-            const bus2Data = snapshot.val();
-            if (bus2Data) {
-                Object.values(bus2Data).forEach((entry) => {
-                    if (entry.lat && entry.lon) {
-                        updateMarker("9136828236", entry.lat, entry.lon, bus2Icon); // Updated device name
-                    }
-                });
-            }
         });
 
         const locations = [
@@ -198,6 +178,7 @@
     <div id="map"></div>
 </body>
 </html>
+
 
 
 
