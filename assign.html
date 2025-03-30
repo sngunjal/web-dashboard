@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assign Driver to Bus</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, set, get, update, push, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDOEFy38vhYwAJic-EmRMmi2Vmx1ooKk-0",
+      authDomain: "colonymate.firebaseapp.com",
+      databaseURL: "https://colonymate-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "colonymate",
+      storageBucket: "colonymate.appspot.com",
+      messagingSenderId: "511804040457",
+      appId: "1:511804040457:web:905b654d9062176b075fd8",
+      measurementId: "G-LLNTT9EKR2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const driverListRef = ref(db, 'driverList');
+    const assignmentsRef = ref(db, 'busAssignments');
+
+    const driverSelect = document.getElementById('driverSelect');
+    const busSelect = document.getElementById('busSelect');
+    const addBtn = document.getElementById('assignBtn');
+    const newName = document.getElementById('newDriverName');
+    const newPhone = document.getElementById('newDriverPhone');
+    const addNewBtn = document.getElementById('addNewDriver');
+
+    function refreshDriverDropdown(drivers) {
+      driverSelect.innerHTML = '';
+      Object.entries(drivers).forEach(([id, d]) => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.text = `${d.name} (${d.phone})`;
+        driverSelect.appendChild(opt);
+      });
+    }
+
+    // Load drivers
+    onValue(driverListRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      refreshDriverDropdown(data);
+    });
+
+    // Assign driver
+    addBtn.onclick = () => {
+      const bus = busSelect.value;
+      const driverId = driverSelect.value;
+      get(ref(db, `driverList/${driverId}`)).then((snap) => {
+        const driver = snap.val();
+        if (driver) {
+          set(ref(db, `busAssignments/${bus}`), driver);
+          alert(`✅ ${driver.name} assigned to ${bus}`);
+        }
+      });
+    };
+
+    // Add new driver
+    addNewBtn.onclick = () => {
+      const name = newName.value.trim();
+      const phone = newPhone.value.trim();
+      if (name && phone) {
+        const newRef = push(driverListRef);
+        set(newRef, { name, phone });
+        alert('✅ Driver added');
+        newName.value = '';
+        newPhone.value = '';
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    select, input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    h2 {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚌 Assign Driver to Bus</h1>
+  <label for="busSelect">Select Bus:</label>
+  <select id="busSelect">
+    <option value="bus1">Bus 1</option>
+    <option value="bus2">Bus 2</option>
+  </select>
+
+  <label for="driverSelect">Select Driver:</label>
+  <select id="driverSelect"></select>
+
+  <button id="assignBtn">Assign Driver</button>
+
+  <h2>Add New Driver</h2>
+  <input id="newDriverName" placeholder="Driver Name" />
+  <input id="newDriverPhone" placeholder="Driver Phone" />
+  <button id="addNewDriver">Add Driver</button>
+</body>
+</html>
