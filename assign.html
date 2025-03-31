@@ -23,8 +23,8 @@
     const db = getDatabase(app);
 
     function loadDrivers() {
-      const driverSelects = ["Driver1", "Driver2"];
-      const driverRef = ref(db, 'Driver');
+      const driverSelects = ["bus1-driver", "bus2-driver"];
+      const driverRef = ref(db, 'Driver'); // ✅ Corrected path
 
       onValue(driverRef, (snapshot) => {
         const data = snapshot.val() || {};
@@ -35,7 +35,7 @@
             const d = data[key];
             const opt = document.createElement("option");
             opt.value = key;
-            opt.textContent = `${d.name} (${d.phone})`;
+            opt.textContent = `${d.Name} (${d.Contact})`; // ✅ Updated keys
             select.appendChild(opt);
           }
         });
@@ -44,23 +44,19 @@
 
     window.assignDriver = (bus) => {
       const driverId = document.getElementById(`${bus}-driver`).value;
-      const driverRef = ref(db, `driverList/${driverId}`);
+      const driverRef = ref(db, `Driver/${driverId}`); // ✅ Correct path
+
       onValue(driverRef, (snapshot) => {
         const driver = snapshot.val();
         if (driver) {
-          set(ref(db, `busAssignments/${bus}`), driver);
-          alert(`${bus === 'bus1' ? 'Blue Bus' : 'Green Bus'} assigned to ${driver.name}`);
+          const formatted = {
+            name: driver.Name,
+            contact: driver.Contact
+          };
+          set(ref(db, `busLocations/${bus}/driver`), formatted); // ✅ Matches your final DB
+          alert(`${bus === 'bus1' ? 'Blue Bus' : 'Green Bus'} assigned to ${formatted.name}`);
         }
       }, { onlyOnce: true });
-    }
-
-    window.addDriver = () => {
-      const name = document.getElementById("new-name").value.trim();
-      const phone = document.getElementById("new-phone").value.trim();
-      if (!name || !phone) return alert("Both fields required");
-      push(ref(db, 'driverList'), { name, phone });
-      document.getElementById("new-name").value = '';
-      document.getElementById("new-phone").value = '';
     }
 
     window.onload = loadDrivers;
@@ -119,13 +115,7 @@
     <select id="bus2-driver"></select>
     <button onclick="assignDriver('bus2')">Assign to Green Bus</button>
   </div>
-
-  <div class="section">
-    <h2>➕ Add New Driver</h2>
-    <input id="new-name" placeholder="Driver Name">
-    <input id="new-phone" placeholder="Phone Number">
-    <button onclick="addDriver()">Add Driver</button>
-  </div>
 </body>
 </html>
+
 
