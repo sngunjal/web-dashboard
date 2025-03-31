@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapbox Leaflet Test</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mapbox Base Map Test</title>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.css" rel="stylesheet" />
   <style>
-    html, body {
+    body, html {
       margin: 0;
       padding: 0;
       height: 100%;
     }
     #map {
-      height: 100%;
+      height: 100vh;
       width: 100%;
     }
   </style>
@@ -20,18 +20,18 @@
 <body>
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.js"></script>
   <script>
-    const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q";
+    mapboxgl.accessToken = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q";
 
-    const map = L.map('map').setView([19.22144, 72.8680], 14);
-
-    L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${MAPBOX_API_KEY}`, {
-      attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, Imagery © Mapbox',
-      tileSize: 512,
-      zoomOffset: -1
-    }).addTo(map);
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [72.8680, 19.22144],
+      zoom: 13.75
+    });
   </script>
 </body>
 </html>
+
 
