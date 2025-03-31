@@ -1,194 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realtime Map with Flag Icons</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.css" rel="stylesheet" />
-    <script type="module">
-        async function createBusIcon(url, fallbackSvg) {
-            const img = new Image();
-            img.src = url;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Realtime Bus Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.css" rel="stylesheet" />
+  <script type="module">
+    async function createBusIcon(url) {
+      return L.divIcon({
+        className: 'animated-bus',
+        html: `<img src="${url}" style="width: 30px; transform: rotate(0deg); transition: transform 0.5s linear;">`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+    }
 
-            return new Promise((resolve) => {
-                img.onload = () => {
-                    resolve(L.divIcon({
-                        className: 'animated-bus',
-                        html: `<img src="${url}" style="width: 30px; transform: rotate(0deg); transition: transform 0.5s linear;">`,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    }));
-                };
-                img.onerror = () => {
-                    resolve(L.divIcon({
-                        className: '',
-                        html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${fallbackSvg.color}">
-                            <path d="${fallbackSvg.path}" />
-                        </svg>`,
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 20]
-                    }));
-                };
-            });
+    window.addEventListener("DOMContentLoaded", async () => {
+      const [{ initializeApp }, { getDatabase, ref, onValue }] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js")
+      ]);
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDOEFy38vhYwAJic-EmRMmi2Vmx1ooKk-0",
+        authDomain: "colonymate.firebaseapp.com",
+        databaseURL: "https://colonymate-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "colonymate",
+        storageBucket: "colonymate.appspot.com",
+        messagingSenderId: "511804040457",
+        appId: "1:511804040457:web:905b654d9062176b075fd8",
+        measurementId: "G-LLNTT9EKR2"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      const bounds = L.latLngBounds([19.2100, 72.8528], [19.2400, 72.8870]);
+      const map = L.map("map", {
+        maxBounds: bounds,
+        maxBoundsViscosity: 1.0
+      }).setView([19.22144, 72.8680], 13.75);
+
+      L.tileLayer(
+        `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q`,
+        {
+          tileSize: 512,
+          zoomOffset: -1
         }
+      ).addTo(map);
 
-        window.addEventListener("DOMContentLoaded", async () => {
-            const [{ initializeApp }, { getDatabase, ref, onValue }] = await Promise.all([
-                import("https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"),
-                import("https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js")
-            ]);
+      const bus1Icon = await createBusIcon("https://i.imgur.com/TiQSm8E.png");
+      const bus2Icon = await createBusIcon("https://i.imgur.com/NuAEaBl.png");
 
-            const firebaseConfig = {
-                apiKey: "AIzaSyDOEFy38vhYwAJic-EmRMmi2Vmx1ooKk-0",
-                authDomain: "colonymate.firebaseapp.com",
-                databaseURL: "https://colonymate-default-rtdb.asia-southeast1.firebasedatabase.app",
-                projectId: "colonymate",
-                storageBucket: "colonymate.firebasestorage.app",
-                messagingSenderId: "511804040457",
-                appId: "1:511804040457:web:905b654d9062176b075fd8",
-                measurementId: "G-LLNTT9EKR2"
-            };
+      const markers = {};
+      const prevCoords = {};
 
-            const app = initializeApp(firebaseConfig);
-            const database = getDatabase(app);
+      const buses = [
+        { imei: "0861128067296753", name: "bus1", icon: bus1Icon },
+        { imei: "0861128067297470", name: "bus2", icon: bus2Icon }
+      ];
 
-            const MAPBOX_API_KEY = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q";
+      for (const bus of buses) {
+        const latestRef = ref(db, `busLocations/${bus.name}/latest`);
+        const driverRef = ref(db, `busAssignments/${bus.name}`);
 
-            const bounds = L.latLngBounds([19.2100, 72.8528], [19.2400, 72.8870]);
-            const map = L.map('map', {
-                maxBounds: bounds,
-                maxBoundsViscosity: 1.0
-            }).setView([19.22144, 72.8680], 13.75);
-
-            L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${MAPBOX_API_KEY}`, {
-                attribution: 'Map data © OpenStreetMap contributors, Imagery © Mapbox',
-                tileSize: 512,
-                zoomOffset: -1
-            }).addTo(map);
-
-            const bus1Icon = await createBusIcon(
-                'https://i.imgur.com/TiQSm8E.png',
-                { color: "#007bff", path: "M4 16v1c0 .6.4 1 1 1v2c0 .6.4 1 1 1s1-.4 1-1v-2h10v2c0 .6.4 1 1 1s1-.4 1-1v-2c.6 0 1-.4 1-1v-1c0-2.8-2.2-5-5-5h-6c-2.8 0-5 2.2-5 5z" }
-            );
-
-            const bus2Icon = await createBusIcon(
-                'https://i.imgur.com/NuAEaBl.png',
-                { color: "#28a745", path: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z" }
-            );
-
-            const markers = {};
-            const prevCoords = {};
-
-            const buses = [
-                { imei: "0861128067296753", icon: bus1Icon, path: 'busLocations/bus1' },
-                { imei: "0861128067297470", icon: bus2Icon, path: 'busLocations/bus2' }
-            ];
-
-            buses.forEach(bus => {
-                const refPath = ref(database, bus.path);
-                onValue(refPath, (snap) => {
-                    const data = snap.val();
-                    if (data && data.latest && data.driver) {
-                        const { lat, lon } = data.latest;
-                        const { name, contact } = data.driver;
-                        if (!lat || !lon) return;
-
-                        const popupHtml = `<b>Call ${name}</b><br><a href="tel:${contact}" style="display:inline-block;margin-top:5px;font-size:16px;color:#007bff;font-weight:bold;text-decoration:underline;" ontouchstart="window.location.href='tel:${contact}'">📞 ${contact}</a>`;
-
-                        if (markers[bus.imei]) {
-                            const old = prevCoords[bus.imei];
-                            if (old) {
-                                const angle = Math.atan2(lon - old.lon, lat - old.lat) * 180 / Math.PI;
-                                const img = markers[bus.imei].getElement()?.querySelector('img');
-                                if (img) {
-                                    const currentRotation = parseFloat(img.dataset.angle || "0");
-                                    const delta = angle - currentRotation;
-                                    const eased = currentRotation + delta * 0.3;
-                                    img.style.transform = `rotate(${eased}deg)`;
-                                    img.dataset.angle = eased;
-                                }
-                            }
-                            markers[bus.imei]
-                                .setLatLng([lat, lon])
-                                .setPopupContent(popupHtml)
-                                .openPopup();
-                        } else {
-                            markers[bus.imei] = L.marker([lat, lon], { icon: bus.icon }).addTo(map).bindPopup(popupHtml).openPopup();
-                        }
-                        prevCoords[bus.imei] = { lat, lon };
-                    }
-                });
-            });
-
-            const locations = [
-                { name: "Colony", lat: 19.214432, lon: 72.878878 },
-                { name: "SGNP Gate", lat: 19.2314, lon: 72.8636 },
-                { name: "Station", lat: 19.2314, lon: 72.859 },
-                { name: "St John School", lat: 19.2177, lon: 72.8703 },
-                { name: "Ryan School", lat: 19.2131, lon: 72.8622 }
-            ];
-
-            locations.forEach(location => {
-                const icon = L.divIcon({
-                    className: '',
-                    html: `<div class="flag-icon">
-                            <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png?9898922749706957214" alt="flag">
-                            <div class="tooltip">${location.name}</div>
-                          </div>`,
-                    iconSize: null,
-                    iconAnchor: [12, 25]
-                });
-                L.marker([location.lat, location.lon], { icon }).addTo(map);
-            });
+        let driver = { name: "Unknown", contact: "N/A" };
+        onValue(driverRef, (snap) => {
+          if (snap.exists()) driver = snap.val();
         });
-    </script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        #map {
-            height: 600px;
-            width: 100%;
-            border-radius: 25px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
 
-        .flag-icon {
-            position: relative;
-            display: inline-block;
-        }
+        onValue(latestRef, (snap) => {
+          const latest = snap.val();
+          if (!latest?.lat || !latest?.lon) return;
 
-        .flag-icon img {
-            height: 30px;
-            width: auto;
-        }
+          const popupHtml = `<b>Call ${driver.name}</b><br><a href="tel:${driver.contact}" ontouchstart="window.location.href='tel:${driver.contact}'" style="display:inline-block;margin-top:5px;font-size:16px;color:#007bff;font-weight:bold;text-decoration:underline;">📞 ${driver.contact}</a>`;
 
-        .tooltip {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            color: #333;
-            font-size: 12px;
-            font-weight: bold;
-            border: 1px solid #ccc;
-            padding: 5px;
-            border-radius: 3px;
-            white-space: nowrap;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-        }
+          if (markers[bus.imei]) {
+            const old = prevCoords[bus.imei];
+            if (old) {
+              const angle = Math.atan2(latest.lon - old.lon, latest.lat - old.lat) * 180 / Math.PI;
+              const img = markers[bus.imei].getElement()?.querySelector("img");
+              if (img) {
+                const current = parseFloat(img.dataset.angle || "0");
+                const eased = current + (angle - current) * 0.3;
+                img.style.transform = `rotate(${eased}deg)`;
+                img.dataset.angle = eased;
+              }
+            }
+            markers[bus.imei]
+              .setLatLng([latest.lat, latest.lon])
+              .setPopupContent(popupHtml);
+          } else {
+            markers[bus.imei] = L.marker([latest.lat, latest.lon], { icon: bus.icon }).addTo(map).bindPopup(popupHtml);
+          }
 
-        .flag-icon:hover .tooltip {
-            display: block;
-        }
+          prevCoords[bus.imei] = { lat: latest.lat, lon: latest.lon };
+        });
+      }
 
-        .leaflet-marker-icon {
-            cursor: pointer !important;
-        }
-    </style>
+      const stops = [
+        { name: "Colony", lat: 19.214432, lon: 72.878878 },
+        { name: "SGNP Gate", lat: 19.2314, lon: 72.8636 },
+        { name: "Station", lat: 19.2314, lon: 72.859 },
+        { name: "St John School", lat: 19.2177, lon: 72.8703 },
+        { name: "Ryan School", lat: 19.2131, lon: 72.8622 }
+      ];
+
+      for (const stop of stops) {
+        const icon = L.divIcon({
+          className: '',
+          html: `<div class="flag-icon">
+                    <img src="https://cdn.shopify.com/s/files/1/1061/1924/files/Red_Flag_Emoji.png" alt="flag">
+                    <div class="tooltip">${stop.name}</div>
+                 </div>`,
+          iconAnchor: [12, 25]
+        });
+        L.marker([stop.lat, stop.lon], { icon }).addTo(map);
+      }
+    });
+  </script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+      border-radius: 20px;
+    }
+
+    .flag-icon {
+      position: relative;
+    }
+
+    .flag-icon img {
+      height: 30px;
+      width: auto;
+    }
+
+    .tooltip {
+      display: none;
+      position: absolute;
+      top: -30px;
+      left: 20px;
+      background: #fff;
+      color: #000;
+      font-weight: bold;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 3px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .flag-icon:hover .tooltip {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-    <div id="map"></div>
+  <div id="map"></div>
 </body>
 </html>
+
 
