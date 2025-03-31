@@ -43,21 +43,31 @@
       });
     }
 
-    window.assignDriver = (busKey) => {
-      const selectId = busKey === "bus1" ? "bus1-driver" : "bus2-driver";
-      const driverId = document.getElementById(selectId).value;
-      const driverRef = ref(db, `Driver/${driverId}`);
-      onValue(driverRef, (snapshot) => {
-        const driver = snapshot.val();
-        if (driver) {
-          set(ref(db, `busLocations/${busKey}/driver`), {
-            name: driver.Name,
-            contact: driver.Contact
-          });
-          alert(`${busKey === 'bus1' ? 'Blue Bus' : 'Green Bus'} assigned to ${driver.Name}`);
-        }
+    window.addDriver = () => {
+      const name = document.getElementById("new-name").value.trim();
+      const contact = document.getElementById("new-phone").value.trim();
+      if (!name || !contact) {
+        alert("Please fill in both name and phone number.");
+        return;
+      }
+
+      const driverListRef = ref(db, 'Driver');
+      onValue(driverListRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        const count = Object.keys(data).length;
+        const newKey = `Driver${count + 1}`;
+
+        set(ref(db, `Driver/${newKey}`), {
+          Name: name,
+          Contact: contact
+        });
+
+        document.getElementById("new-name").value = '';
+        document.getElementById("new-phone").value = '';
+        alert(`Driver "${name}" added as ${newKey}`);
       }, { onlyOnce: true });
     };
+
 
     window.addDriver = () => {
       const name = document.getElementById("new-name").value.trim();
