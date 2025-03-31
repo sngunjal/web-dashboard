@@ -7,7 +7,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+    import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDOEFy38vhYwAJic-EmRMmi2Vmx1ooKk-0",
@@ -51,32 +51,6 @@
         return;
       }
 
-      const driverListRef = ref(db, 'Driver');
-      onValue(driverListRef, (snapshot) => {
-        const data = snapshot.val() || {};
-        const count = Object.keys(data).length;
-        const newKey = `Driver${count + 1}`;
-
-        set(ref(db, `Driver/${newKey}`), {
-          Name: name,
-          Contact: contact
-        });
-
-        document.getElementById("new-name").value = '';
-        document.getElementById("new-phone").value = '';
-        alert(`Driver "${name}" added as ${newKey}`);
-      }, { onlyOnce: true });
-    };
-
-
-    window.addDriver = () => {
-      const name = document.getElementById("new-name").value.trim();
-      const contact = document.getElementById("new-phone").value.trim();
-      if (!name || !contact) {
-        alert("Please fill in both name and phone number.");
-        return;
-      }
-
       push(ref(db, 'Driver'), {
         Name: name,
         Contact: contact
@@ -84,7 +58,26 @@
 
       document.getElementById("new-name").value = '';
       document.getElementById("new-phone").value = '';
-      alert(`Driver "${name}" added successfully.`);
+      alert(`✅ Driver "${name}" added successfully.`);
+    };
+
+    window.assignDriver = async (busKey) => {
+      const select = document.getElementById(`${busKey}-driver`);
+      const driverId = select.value;
+
+      if (!driverId) return alert("Please select a driver first.");
+
+      const driverSnap = await get(ref(db, `Driver/${driverId}`));
+      if (!driverSnap.exists()) return alert("Selected driver not found.");
+
+      const driver = driverSnap.val();
+
+      await set(ref(db, `busLocations/${busKey}/driver`), {
+        name: driver.Name,
+        contact: driver.Contact
+      });
+
+      alert(`🚌 ${busKey === 'bus1' ? 'Blue Bus' : 'Green Bus'} assigned to ${driver.Name}`);
     };
 
     window.onload = loadDrivers;
