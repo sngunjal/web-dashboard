@@ -95,7 +95,7 @@
                         const { name, contact } = data.driver;
                         if (!lat || !lon) return;
 
-                        const popupHtml = `<b>Call ${name}</b><br><a href="tel:${contact}" style="display:inline-block;margin-top:5px;font-size:16px;color:#007bff;font-weight:bold;text-decoration:underline;" ontouchstart="window.location.href='tel:${contact}'">📞 ${contact}</a>`;
+                        const popupHtml = `<b>Call ${name}</b><br><a href="tel:${contact}" style="display:inline-block;margin-top:5px;font-size:16px;color:#007bff;font-weight:bold;text-decoration:underline;">📞 ${contact}</a>`;
 
                         if (markers[bus.imei]) {
                             const old = prevCoords[bus.imei];
@@ -191,5 +191,6 @@
     <div id="map"></div>
 </body>
 </html>
+
 
 
