@@ -24,7 +24,7 @@
 
     function loadDrivers() {
       const driverSelects = ["bus1-driver", "bus2-driver"];
-      const driverRef = ref(db, 'driverList');
+      const driverRef = ref(db, 'driver');
 
       onValue(driverRef, (snapshot) => {
         const data = snapshot.val() || {};
