@@ -3,18 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mapbox Base Map Test</title>
+  <title>Mapbox Test</title>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.css" rel="stylesheet" />
   <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-    #map {
-      height: 100vh;
-      width: 100%;
-    }
+    body, html { margin: 0; padding: 0; height: 100%; }
+    #map { height: 100%; width: 100%; }
   </style>
 </head>
 <body>
@@ -22,16 +15,19 @@
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.1/mapbox-gl.js"></script>
   <script>
-    mapboxgl.accessToken = "pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY200bzB6ZjZrMGRjNjJtcXMzNXl4YTBkNCJ9.FdaDmXJ0r-Ie7jaln3h86Q";
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY204d3A1eGltMTh2MTJqczhjdDBzbDBvZSJ9.PoLv468T--e3Z8frIfk1Pg';
 
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: [72.8680, 19.22144],
-      zoom: 13.75
+      center: [72.8796, 19.2135],
+      zoom: 15
     });
+
+    map.addControl(new mapboxgl.NavigationControl());
   </script>
 </body>
 </html>
+
 
 
