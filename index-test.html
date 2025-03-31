@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mapbox Test</title>
+  <title>OpenStreetMap Test</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    #map {
-      height: 100vh;
-      width: 100%;
+    html, body, #map {
+      height: 100%;
+      margin: 0;
+      padding: 0;
     }
   </style>
 </head>
@@ -19,10 +20,8 @@
   <script>
     const map = L.map("map").setView([19.22144, 72.8680], 14);
 
-    L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoic25ndW5qYWwiLCJhIjoiY204d3A1eGltMTh2MTJqczhjdDBzbDBvZSJ9.PoLv468T--e3Z8frIfk1Pg', {
-      tileSize: 512,
-      zoomOffset: -1,
-      attribution: '© <a href="https://www.mapbox.com/">Mapbox</a>'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
   </script>
 </body>
