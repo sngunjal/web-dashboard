@@ -94,14 +94,20 @@
     });
 
     const markers = {};
-    const prevCoords = {};
 
     function updateMarker(imei, lat, lon, icon, name, contact) {
       const popupHtml = `<b>Call ${name}</b><br><a href="tel:${contact}">📞 ${contact}</a>`;
+
       if (markers[imei]) {
         markers[imei].setLatLng([lat, lon]).setPopupContent(popupHtml);
       } else {
-        markers[imei] = L.marker([lat, lon], { icon }).addTo(map).bindPopup(popupHtml).openPopup();
+        markers[imei] = L.marker([lat, lon], { icon })
+          .addTo(map)
+          .bindPopup(popupHtml);
+
+        if (imei === "0861128067296753") {
+          markers[imei].openPopup(); // Blue Bus IMEI — show popup automatically
+        }
       }
     }
 
