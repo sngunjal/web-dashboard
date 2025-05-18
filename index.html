@@ -21,17 +21,19 @@
 
     .clock {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      padding: 6px 12px;
-      background-color: rgba(255, 255, 255, 0.6);
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      background-color: rgba(255, 255, 255, 0.55);
       color: #222;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 10px;
       cursor: move;
       z-index: 1000;
       user-select: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
     .flag-icon {
@@ -69,7 +71,7 @@
 </head>
 <body>
   <div id="map"></div>
-  <div class="clock" id="clock" draggable="true">--:--</div>
+  <div class="clock" id="clock">--:--</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -113,16 +115,14 @@
 
     function updateMarker(imei, lat, lon, icon, name, contact) {
       const popupHtml = `<b>Call ${name}</b><br><a href="tel:${contact}">📞 ${contact}</a>`;
-
       if (markers[imei]) {
         markers[imei].setLatLng([lat, lon]).setPopupContent(popupHtml);
       } else {
         markers[imei] = L.marker([lat, lon], { icon })
           .addTo(map)
           .bindPopup(popupHtml);
-
         if (imei === "0861128067296753") {
-          markers[imei].openPopup(); // Blue Bus only
+          markers[imei].openPopup();
         }
       }
     }
@@ -164,14 +164,13 @@
       L.marker([location.lat, location.lon], { icon }).addTo(map);
     });
 
-    // Clock logic
+    // Digital Clock
     const clock = document.getElementById("clock");
     function updateClock() {
       const now = new Date().toLocaleString("en-IN", {
         timeZone: "Asia/Kolkata",
         hour: "numeric",
         minute: "numeric",
-        second: "numeric",
         hour12: true
       });
       clock.textContent = now;
@@ -184,23 +183,21 @@
     clock.addEventListener("mousedown", function (e) {
       offsetX = e.clientX - clock.offsetLeft;
       offsetY = e.clientY - clock.offsetTop;
-
       function move(e) {
         clock.style.left = `${e.clientX - offsetX}px`;
         clock.style.top = `${e.clientY - offsetY}px`;
       }
-
       function stop() {
         document.removeEventListener("mousemove", move);
         document.removeEventListener("mouseup", stop);
       }
-
       document.addEventListener("mousemove", move);
       document.addEventListener("mouseup", stop);
     });
   </script>
 </body>
 </html>
+
 
 
 
