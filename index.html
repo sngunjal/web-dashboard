@@ -19,6 +19,21 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
+    .clock {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 6px 12px;
+      background-color: rgba(255, 255, 255, 0.6);
+      color: #222;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: move;
+      z-index: 1000;
+      user-select: none;
+    }
+
     .flag-icon {
       position: relative;
       display: inline-block;
@@ -54,6 +69,7 @@
 </head>
 <body>
   <div id="map"></div>
+  <div class="clock" id="clock" draggable="true">--:--</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -106,7 +122,7 @@
           .bindPopup(popupHtml);
 
         if (imei === "0861128067296753") {
-          markers[imei].openPopup(); // Blue Bus IMEI — show popup automatically
+          markers[imei].openPopup(); // Blue Bus only
         }
       }
     }
@@ -147,9 +163,45 @@
       });
       L.marker([location.lat, location.lon], { icon }).addTo(map);
     });
+
+    // Clock logic
+    const clock = document.getElementById("clock");
+    function updateClock() {
+      const now = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: true
+      });
+      clock.textContent = now;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Drag Clock
+    let offsetX, offsetY;
+    clock.addEventListener("mousedown", function (e) {
+      offsetX = e.clientX - clock.offsetLeft;
+      offsetY = e.clientY - clock.offsetTop;
+
+      function move(e) {
+        clock.style.left = `${e.clientX - offsetX}px`;
+        clock.style.top = `${e.clientY - offsetY}px`;
+      }
+
+      function stop() {
+        document.removeEventListener("mousemove", move);
+        document.removeEventListener("mouseup", stop);
+      }
+
+      document.addEventListener("mousemove", move);
+      document.addEventListener("mouseup", stop);
+    });
   </script>
 </body>
 </html>
+
 
 
 
